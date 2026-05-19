@@ -31,6 +31,11 @@ async function run() {
     
     const ideaCollection = db.collection("ideavalut")
 
+    app.get('/idea', async (req, res) => {
+      const result = await ideaCollection.find().toArray()
+      res.json(result)
+    })
+
     app.post('/idea', async (req, res)=>{
         const ideaData = req.body
         console.log(ideaData);
@@ -39,10 +44,12 @@ async function run() {
         res.json(result)
     })
 
-    app.get('/idea', async (req, res) => {
-      const result = await ideaCollection.find().toArray()
+    app.get('/idea/:id', async (req, res) => {
+      const { id } = req.params;
+      const result = await ideaCollection.findOne({ _id: new ObjectId(id) })
       res.json(result)
     })
+    
 
 
 
