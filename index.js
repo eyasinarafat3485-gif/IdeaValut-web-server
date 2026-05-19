@@ -36,6 +36,11 @@ async function run() {
       res.json(result)
     })
 
+    app.get('/trendingIdeas', async(req, res)=>{
+      const result = await ideaCollection.find().limit(6).toArray()
+      res.json(result)
+    })
+
     app.post('/idea', async (req, res)=>{
         const ideaData = req.body
         console.log(ideaData);
