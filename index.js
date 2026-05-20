@@ -103,13 +103,12 @@ async function run() {
       res.json(result)
     })
 
-    // app.delete('/comments/:id', async (req, res) => {
-    //   const { id } = req.params;
-    //   const result = await commentsCollection.deleteOne({ _id: new ObjectId(id) });
+    app.delete('/comments/:id', async (req, res) => {
+      const { id } = req.params;
+      const result = await commentsCollection.deleteOne({ _id: new ObjectId(id) });
 
-    //   res.json(result);
-    // })
-
+      res.json(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
