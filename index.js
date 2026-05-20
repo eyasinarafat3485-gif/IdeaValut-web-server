@@ -27,26 +27,27 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    const db= client.db("assignmenta9")
-    
+    const db = client.db("assignmenta9")
+
     const ideaCollection = db.collection("ideavalut")
+    const commentsCollection = db.collection("comments")
 
     app.get('/idea', async (req, res) => {
       const result = await ideaCollection.find().toArray()
       res.json(result)
     })
 
-    app.get('/trendingIdeas', async(req, res)=>{
+    app.get('/trendingIdeas', async (req, res) => {
       const result = await ideaCollection.find().limit(6).toArray()
       res.json(result)
     })
 
-    app.post('/idea', async (req, res)=>{
-        const ideaData = req.body
-        console.log(ideaData);
-        const result = await ideaCollection.insertOne(ideaData)
+    app.post('/idea', async (req, res) => {
+      const ideaData = req.body
+      console.log(ideaData);
+      const result = await ideaCollection.insertOne(ideaData)
 
-        res.json(result)
+      res.json(result)
     })
 
     app.get('/idea/:id', async (req, res) => {
@@ -54,8 +55,60 @@ async function run() {
       const result = await ideaCollection.findOne({ _id: new ObjectId(id) })
       res.json(result)
     })
-    
 
+    app.post('/api/comments', async (req, res) => {
+      const commentData = req.body;
+
+      const finalCommentData = {
+        ...commentData,
+        createdAt: new Date()
+      };
+
+      const result = await commentsCollection.insertOne(finalCommentData);
+
+      const insertedComment = {
+        _id: result.insertedId,
+        ...finalCommentData
+      };
+
+      res.status(201).json(insertedComment);
+    });
+
+    app.get('/api/comments', async (req, res) => {
+      const { ideaId } = req.query;
+
+      let query = {};
+      if (ideaId) {
+        query = { ideaId: ideaId };
+      }
+
+      const result = await commentsCollection.find(query).sort({ _id: -1 }).toArray();
+      res.json(result);
+    });
+
+    app.get('/comments/:ideaId', async (req, res) => {
+      const { ideaId } = req.params;
+      const result = await commentsCollection.find({ ideaId }).toArray();
+
+      res.json(result);
+    })
+
+    app.patch('/comments/:id', async (req, res) => {
+      const { id } = req.params;
+      const updatedData = req.body;
+      const result = await commentsCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedData }
+      )
+      res.json(result)
+    })
+
+    // app.delete('/comments/:id', async (req, res) => {
+    //   const { id } = req.params;
+    //   const result = await commentsCollection.deleteOne({ _id: new ObjectId(id) });
+
+    //   res.json(result);
+    // })
 
 
     // Send a ping to confirm a successful connection
@@ -69,7 +122,6 @@ async function run() {
 run().catch(console.dir);
 
 
-
 app.get('/', (req, res) => {
   res.send('Hello World! Server run on fine')
 })
@@ -77,3 +129,167 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`)
 })
+
+// import dns from "node:dns";
+// dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
+// import express from 'express'
+// import { MongoClient, ObjectId, ServerApiVersion } from 'mongodb'
+// import dotenv from 'dotenv'
+// import cors from 'cors'
+
+// dotenv.config();
+// const uri = process.env.MONGODB_URI;
+
+// const app = express()
+// const PORT = process.env.PORT
+
+// // middleware
+// app.use(cors());
+// app.use(express.json())
+
+// const client = new MongoClient(uri, {
+//   serverApi: {
+//     version: ServerApiVersion.v1,
+//     strict: true,
+//     deprecationErrors: true,
+//   }
+// })
+
+// async function run() {
+//   try {
+//     await client.connect();
+//     const db = client.db("assignmenta9")
+
+//     const ideaCollection = db.collection("ideavalut")
+//     const commentCollection = db.collection("comments")  // ← নতুন collection
+
+//     // ═══════════════════════════════════
+//     //  IDEA ROUTES (আগেরটাই আছে)
+//     // ═══════════════════════════════════
+
+//     app.get('/idea', async (req, res) => {
+//       const result = await ideaCollection.find().toArray()
+//       res.json(result)
+//     })
+
+//     app.get('/trendingIdeas', async (req, res) => {
+//       const result = await ideaCollection.find().limit(6).toArray()
+//       res.json(result)
+//     })
+
+//     app.post('/idea', async (req, res) => {
+//       const ideaData = req.body
+//       const result = await ideaCollection.insertOne(ideaData)
+//       res.json(result)
+//     })
+
+//     app.get('/idea/:id', async (req, res) => {
+//       const { id } = req.params;
+//       const result = await ideaCollection.findOne({ _id: new ObjectId(id) })
+//       res.json(result)
+//     })
+
+//     // ═══════════════════════════════════
+//     //  COMMENT ROUTES (নতুন)
+//     // ═══════════════════════════════════
+
+//     // GET — একটা idea র সব comment আনো
+//     app.get('/comments/:ideaId', async (req, res) => {
+//       try {
+//         const { ideaId } = req.params;
+//         const result = await commentCollection
+//           .find({ ideaId })
+//           .sort({ createdAt: 1 })
+//           .toArray()
+//         res.json(result)
+//       } catch (err) {
+//         res.status(500).json({ message: "Failed to fetch comments", error: err.message })
+//       }
+//     })
+
+//     // POST — নতুন comment করো
+//     app.post('/comments', async (req, res) => {
+//       try {
+//         const { ideaId, userId, userName, userImage, text } = req.body;
+
+//         if (!ideaId || !userId || !userName || !text) {
+//           return res.status(400).json({ message: "Missing required fields" })
+//         }
+
+//         const newComment = {
+//           ideaId,
+//           userId,
+//           userName,
+//           userImage: userImage || null,
+//           text,
+//           edited: false,
+//           createdAt: new Date(),
+//         }
+
+//         const result = await commentCollection.insertOne(newComment)
+//         res.status(201).json({ ...newComment, _id: result.insertedId })
+//       } catch (err) {
+//         res.status(500).json({ message: "Failed to post comment", error: err.message })
+//       }
+//     })
+
+//     // PUT — comment edit করো
+//     app.put('/comments/:commentId', async (req, res) => {
+//       try {
+//         const { commentId } = req.params;
+//         const { text } = req.body;
+
+//         if (!text || !text.trim()) {
+//           return res.status(400).json({ message: "Comment text is required" })
+//         }
+
+//         const result = await commentCollection.findOneAndUpdate(
+//           { _id: new ObjectId(commentId) },
+//           { $set: { text: text.trim(), edited: true } },
+//           { returnDocument: 'after' }
+//         )
+
+//         if (!result) {
+//           return res.status(404).json({ message: "Comment not found" })
+//         }
+
+//         res.json(result)
+//       } catch (err) {
+//         res.status(500).json({ message: "Failed to update comment", error: err.message })
+//       }
+//     })
+
+//     // DELETE — comment delete করো
+//     app.delete('/comments/:commentId', async (req, res) => {
+//       try {
+//         const { commentId } = req.params;
+
+//         const result = await commentCollection.deleteOne({ _id: new ObjectId(commentId) })
+
+//         if (result.deletedCount === 0) {
+//           return res.status(404).json({ message: "Comment not found" })
+//         }
+
+//         res.json({ message: "Comment deleted successfully" })
+//       } catch (err) {
+//         res.status(500).json({ message: "Failed to delete comment", error: err.message })
+//       }
+//     })
+
+//     // ping
+//     await client.db("admin").command({ ping: 1 });
+//     console.log("Pinged your deployment. You successfully connected to MongoDB!");
+//   } finally {
+//     // await client.close();
+//   }
+// }
+// run().catch(console.dir);
+
+// app.get('/', (req, res) => {
+//   res.send('Hello World! Server run on fine')
+// })
+
+// app.listen(PORT, () => {
+//   console.log(`Example app listening on port ${PORT}`)
+// })
