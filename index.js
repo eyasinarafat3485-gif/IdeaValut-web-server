@@ -41,6 +41,13 @@ async function run() {
       const result = await ideaCollection.find().limit(6).toArray()
       res.json(result)
     })
+    
+    app.get('/idea/:userId', async (req, res) => {
+      const {userId} = req.params
+      const result = await ideaCollection.find({userId: userId}).toArray()
+      res.json(result)
+    })
+    
 
     app.post('/idea', async (req, res) => {
       const ideaData = req.body
@@ -109,6 +116,20 @@ async function run() {
 
       res.json(result);
     })
+
+    app.get('/api/comments/:userId', async (req, res) => {
+      const { userId } = req.params;
+
+      const result = await commentsCollection.find({ userId: userId }).toArray();
+      res.json(result)
+    })
+
+    // app.get('/api/comments/:userId', async (req, res) => {
+    //   const { userId } = req.params;
+    //   const result = await commentsCollection.find({ userId:userId }).toArray()
+
+    //   res.json(result);
+    // })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
