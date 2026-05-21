@@ -54,7 +54,7 @@ async function run() {
     const ideaCollection = db.collection("ideavalut")
     const commentsCollection = db.collection("comments")
 
-    app.get('/idea', verifyToken, async (req, res) => {
+    app.get('/idea', async (req, res) => {
       const result = await ideaCollection.find().toArray()
       res.json(result)
     })
