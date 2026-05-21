@@ -88,14 +88,14 @@ async function run() {
       res.json(result);
     })
 
-    app.patch('/my-idea/:id', verifyToken, async(req, res)=>{
-      const {id} = await req.params;
+    app.patch('/my-idea/:id', verifyToken, async (req, res) => {
+      const { id } = await req.params;
       const updatedIdea = req.body
       console.log(updatedIdea);
 
       const result = await ideaCollection.updateOne(
-        {_id: new ObjectId(id)},
-        {$set: updatedIdea}
+        { _id: new ObjectId(id) },
+        { $set: updatedIdea }
       )
       res.json(result)
     })
@@ -113,7 +113,7 @@ async function run() {
       res.json(result);
     })
 
-    
+
     app.post('/api/comments', verifyToken, async (req, res) => {
       const commentData = req.body;
 
