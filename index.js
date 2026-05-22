@@ -167,7 +167,7 @@ async function run() {
       res.json(result);
     })
 
-    app.get('/api/comments/:userId', async (req, res) => {
+    app.get('/api/comments/:userId', verifyToken, async (req, res) => {
       const { userId } = req.params;
 
       const result = await commentsCollection.find({ userId: userId }).toArray();
