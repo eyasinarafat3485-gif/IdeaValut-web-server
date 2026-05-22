@@ -131,44 +131,17 @@ async function run() {
       res.status(201).json(insertedComment);
     });
 
-    // app.get('/api/comments', verifyToken, async (req, res) => {
-    //   const { ideaId } = req.query;
+    app.get('/api/comments', verifyToken, async (req, res) => {
+      const { ideaId } = req.query;
 
-    //   let query = {};
-    //   if (ideaId) {
-    //     query = { ideaId: ideaId };
-    //   }
-
-    //   const result = await commentsCollection.find(query).sort({ _id: -1 }).toArray();
-    //   res.json(result);
-    // });
-
-    const verifyToken = async (req, res, next) => {
-
-      const authHeader = req.headers.authorization;
-
-      console.log(authHeader);
-
-      if (!authHeader) {
-        return res.status(401).json({
-          message: "Unauthorized Access"
-        });
+      let query = {};
+      if (ideaId) {
+        query = { ideaId: ideaId };
       }
 
-      const token = authHeader.split(" ")[1];
-
-      if (!token) {
-        return res.status(401).json({
-          message: "Unauthorized Access"
-        });
-      }
-
-      const { payload } = await jwtVerify(token, JWKS);
-      req.user = payload;
-      console.log(req.user);
-
-      next();
-    };
+      const result = await commentsCollection.find(query).sort({ _id: -1 }).toArray();
+      res.json(result);
+    });
 
     app.get('/comments/:ideaId', verifyToken, async (req, res) => {
       const { ideaId } = req.params;
@@ -194,12 +167,13 @@ async function run() {
       res.json(result);
     })
 
-    app.get('/api/comments/:userId', verifyToken, async (req, res) => {
-      const { userId } = req.params;
+    // app.get('/api/comments/:userId', async (req, res) => {
+    //   const { userId } = req.params;
 
-      const result = await commentsCollection.find({ userId: userId }).toArray();
-      res.json(result)
-    })
+    //   const result = await commentsCollection.find({ userId: userId }).toArray();
+    //   res.json(result)
+    // })
+
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
